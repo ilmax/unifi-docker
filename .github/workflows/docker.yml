@@ -9,8 +9,8 @@ on:
       - 'v*.*.*'
 
 env:
-  TEST_TAG: jacobalberty/unifi:test
-  PKGURL: https://dl.ui.com/unifi/6.5.55/unifi_sysvinit_all.deb
+  TEST_TAG: ilmax/unifi-docker:test
+  PKGURL: https://dl.ui.com/unifi/10.4.57/unifi_sysvinit_all.deb
 
 jobs:
   build:
@@ -24,17 +24,12 @@ jobs:
           platforms: all
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Login to GitHub Container Resgistry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Login to DockerHub
-        uses: docker/login-action@v3 
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Build and export to Docker
         uses: docker/build-push-action@v6
         with:
@@ -60,15 +55,16 @@ jobs:
             type=semver,pattern=v{{major}}.{{minor}}
             type=ref,event=branch
           images: |
-            jacobalberty/unifi
+            ilmax/unifi-docker
             ghcr.io/${{ github.repository }}
       - name: Build container image
         uses: docker/build-push-action@v6
         with:
           context: .
-          provenance: false
+          provenance: mode=max
           platforms: linux/arm64/v8,linux/amd64
           push: true
+          sbom: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
