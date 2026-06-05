@@ -6,7 +6,8 @@ on:
 
 env:
   TEST_TAG: ilmax/unifi-docker:test
-  PKGURL: https://dl.ui.com/unifi/10.4.57/unifi_sysvinit_all.deb
+  UNIFI_NETWORK_VERSION: 10.4.57
+  PKGURL: https://dl.ui.com/unifi/${{ env.UNIFI_NETWORK_VERSION }}/unifi_sysvinit_all.deb
 
 jobs:
   build:
@@ -61,7 +62,7 @@ jobs:
           [ $(docker inspect --format='{{json .State.Health.Status}}' unifitest ) == \"healthy\" ] &&
           docker stop unifitest
       - name: Build Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           platforms: linux/arm64/v8,linux/amd64
