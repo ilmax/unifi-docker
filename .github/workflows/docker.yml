@@ -46,12 +46,19 @@ jobs:
           for i in $(seq 1 10); do [ $(docker inspect --format='{{json .State.Health.Status}}' unifitest ) == \"healthy\" ] && break ||  sleep 35; done &&
           [ $(docker inspect --format='{{json .State.Health.Status}}' unifitest ) == \"healthy\" ] &&
           docker stop unifitest
+      - name: Extract UniFi package version
+        id: unifi_version
+        shell: bash
+        run: |
+          pkg_version=$(basename "${PKGURL}" | sed -E 's/^unifi_(.+)_sysvinit_all\.deb$/\1/')
+          echo "version=${pkg_version}" >> "$GITHUB_OUTPUT"
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ steps.unifi_version.outputs.version }}
             type=semver,pattern=v{{version}}
             type=semver,pattern=v{{major}}
             type=semver,pattern=v{{major}}.{{minor}}
