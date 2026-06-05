@@ -6,6 +6,10 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: read
+  packages: write
+
 env:
   TEST_TAG: ghcr.io/${{ github.repository }}:test
   PKGURL: https://dl.ui.com/unifi/10.4.57/unifi_sysvinit_all.deb
