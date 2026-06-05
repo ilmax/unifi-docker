@@ -7,7 +7,6 @@ on:
 env:
   TEST_TAG: ilmax/unifi-docker:test
   UNIFI_NETWORK_VERSION: 10.4.57
-  PKGURL: https://dl.ui.com/unifi/${{ env.UNIFI_NETWORK_VERSION }}/unifi_sysvinit_all.deb
 
 jobs:
   build:
@@ -55,7 +54,7 @@ jobs:
           tags: ${{ env.TEST_TAG }}
       - name: Test image
         run: |
-          export PKGURL=${{env.PKGURL}} &&
+          export PKGURL=https://dl.ui.com/unifi/${{ env.UNIFI_NETWORK_VERSION }}/unifi_sysvinit_all.deb &&
           docker run -d --env PKGURL --rm --name unifitest ${{env.TEST_TAG}} &&
           sleep 35 &&
           for i in $(seq 1 10); do [ $(docker inspect --format='{{json .State.Health.Status}}' unifitest ) == \"healthy\" ] && break ||  sleep 35; done &&
