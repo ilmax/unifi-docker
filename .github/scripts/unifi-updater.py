@@ -1,14 +1,19 @@
 #!/usr/bin/env python3
+import email.utils
+from datetime import datetime, timezone
+import os
+import re
 import urllib.request
 import xml.etree.ElementTree as ET
-import re
-import sys
-import email.utils
-from datetime import datetime
 
 FEED_URL = "https://community.ui.com/rss/releases/UniFi-Network-Application/e6712595-81bb-4829-8e42-9e2630fabcfe"
 DOCKERFILE = "Dockerfile"
 README = "README.md"
+WORKFLOWS = [
+    ".github/workflows/docker.yml",
+    ".github/workflows/build.yml",
+]
+REPO = os.environ.get("GITHUB_REPOSITORY", "ilmax/unifi-docker")
 
 
 def fetch(url: str) -> bytes:
@@ -129,7 +134,7 @@ def update_readme(version: str, date_str: str, link: str) -> None:
         src = f.read()
 
     new_row = (
-        f"| [`latest` `v{version}`](https://github.com/jacobalberty/unifi-docker/blob/master/Dockerfile) "
+        f"| [`latest` `v{version}`](https://github.com/{REPO}/blob/master/Dockerfile) "
         f"| Current Stable: Version {version} as of {date_str} "
         f"| [Change Log {version}]({link}) |"
     )
@@ -151,18 +156,40 @@ def update_readme(version: str, date_str: str, link: str) -> None:
             f.write(new_src)
 
 
+def update_workflow_version(version: str, workflow_path: str) -> None:
+    with open(workflow_path, "r", encoding="utf-8") as f:
+        src = f.read()
+
+    new_src, subs = re.subn(
+        r"^\s*UNIFI_NETWORK_VERSION:.*$",
+        f"  UNIFI_NETWORK_VERSION: {version}",
+        src,
+        count=1,
+        flags=re.MULTILINE,
+    )
+
+    if subs == 0:
+        raise RuntimeError(f"Failed to update UNIFI_NETWORK_VERSION in {workflow_path}")
+
+    if new_src != src:
+        with open(workflow_path, "w", encoding="utf-8") as f:
+            f.write(new_src)
+
+
 def main() -> None:
     feed = fetch(FEED_URL)
     rel = parse_rss_latest(feed)
 
     version = rel["version"]
     link = rel["link"]
-    date_str = rel["date"] or datetime.now(timezone.utc)
+    date_str = rel["date"] or datetime.now(timezone.utc).date().isoformat()
 
     pkg_url = build_pkgurl(version)
 
     update_dockerfile(pkg_url)
     update_readme(version, date_str, link)
+    for workflow in WORKFLOWS:
+        update_workflow_version(version, workflow)
 
     # Printed so GitHub Actions step can capture it
     print(version)

@@ -12,7 +12,8 @@ permissions:
 
 env:
   TEST_TAG: ghcr.io/${{ github.repository }}:test
-  PKGURL: https://dl.ui.com/unifi/10.4.57/unifi_sysvinit_all.deb
+  UNIFI_NETWORK_VERSION: 10.4.57
+  PKGURL: https://dl.ui.com/unifi/${{ env.UNIFI_NETWORK_VERSION }}/unifi_sysvinit_all.deb
 
 jobs:
   build:
@@ -46,19 +47,13 @@ jobs:
           for i in $(seq 1 10); do [ $(docker inspect --format='{{json .State.Health.Status}}' unifitest ) == \"healthy\" ] && break ||  sleep 35; done &&
           [ $(docker inspect --format='{{json .State.Health.Status}}' unifitest ) == \"healthy\" ] &&
           docker stop unifitest
-      - name: Extract UniFi package version
-        id: unifi_version
-        shell: bash
-        run: |
-          pkg_version=$(basename "${PKGURL}" | sed -E 's/^unifi_(.+)_sysvinit_all\.deb$/\1/')
-          echo "version=${pkg_version}" >> "$GITHUB_OUTPUT"
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
           tags: |
             type=raw,value=latest,enable={{is_default_branch}}
-            type=raw,value=${{ steps.unifi_version.outputs.version }}
+            type=raw,value=${{ env.UNIFI_NETWORK_VERSION }}
             type=semver,pattern=v{{version}}
             type=semver,pattern=v{{major}}
             type=semver,pattern=v{{major}}.{{minor}}
@@ -66,7 +61,7 @@ jobs:
           images: |
             ghcr.io/${{ github.repository }}
       - name: Build container image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           provenance: mode=max
