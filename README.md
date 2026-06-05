@@ -55,11 +55,11 @@ docker run -d --init \
    --restart=unless-stopped \
    -p 8080:8080 -p 8443:8443 -p 3478:3478/udp -p 10001:10001/udp \
    -e SYSTEM_IP='<your docker host ip>' \
-   -e TZ='Africa/Johannesburg' \
+   -e TZ='Europe/Amsterdam' \
    -v ~/unifi:/unifi \
    --user unifi \
    --name unifi \
-   jacobalberty/unifi
+   ghcr.io/ilmax/unifi-docker
 ```
 
 In a minute or two, (after Unifi Controller starts up) you can go to
