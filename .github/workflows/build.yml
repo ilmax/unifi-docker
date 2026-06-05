@@ -6,7 +6,7 @@ on:
 
 env:
   TEST_TAG: ilmax/unifi-docker:test
-  PKGURL: https://dl.ui.com/unifi/6.5.55/unifi_sysvinit_all.deb
+  PKGURL: https://dl.ui.com/unifi/10.4.57/unifi_sysvinit_all.deb
 
 jobs:
   build:
