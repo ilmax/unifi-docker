@@ -51,6 +51,14 @@ echo "deb [signed-by=/usr/share/keyrings/adoptium.gpg] https://packages.adoptium
 apt-get update
 apt-get install -qy --no-install-recommends temurin-25-jre
 
+# Install MongoDB server from the official MongoDB repository for Ubuntu 24.04.
+curl -fsSL https://pgp.mongodb.com/server-7.0.asc \
+    | gpg --dearmor -o /usr/share/keyrings/mongodb-server-7.0.gpg
+echo "deb [signed-by=/usr/share/keyrings/mongodb-server-7.0.gpg] https://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse" \
+    | tee /etc/apt/sources.list.d/mongodb-org-7.0.list
+apt-get update
+apt-get install -qy --no-install-recommends mongodb-org-server
+
 if [ -d "/usr/local/docker/pre_build/$(dpkg --print-architecture)" ]; then
     find "/usr/local/docker/pre_build/$(dpkg --print-architecture)" -type f -exec '{}' \;
 fi
